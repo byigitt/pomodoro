@@ -1,54 +1,66 @@
-# React + TypeScript + Vite
+# Pomodoro Timer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A simple and elegant Pomodoro timer application built with React, TypeScript, and Tailwind CSS.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🍅 Pomodoro, Short Break, and Long Break timers
+- ⏱️ Customizable timer durations
+- ✅ Task management with to-do list
+- 🎨 Clean and responsive UI
+- 🌙 Dark mode design
 
-## Expanding the ESLint configuration
+## What is the Pomodoro Technique?
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The Pomodoro Technique is a time management method developed by Francesco Cirillo in the late 1980s. It uses a timer to break work into intervals, traditionally 25 minutes in length, separated by short breaks. Each interval is known as a "pomodoro", from the Italian word for tomato, after the tomato-shaped kitchen timer Cirillo used as a university student.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## How to Use
+
+1. **Set your timer**: Choose between Pomodoro (25 min), Short Break (5 min), or Long Break (15 min)
+2. **Start the timer**: Click the Start button to begin the countdown
+3. **Focus on your task**: Work until the timer rings
+4. **Take a break**: When the Pomodoro timer rings, take a short break
+5. **Repeat**: After completing four Pomodoros, take a longer break
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- pnpm
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/byigitt/pomodoro-timer.git
+cd pomodoro-timer
+
+# Install dependencies
+pnpm install
+
+# Start the development server
+pnpm dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Building for Production
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+pnpm build
 ```
+
+## Technologies Used
+
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Vite
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- The Pomodoro Technique® and Pomodoro™ are registered trademarks of Francesco Cirillo.
+- Inspired by various Pomodoro timer applications and productivity tools.

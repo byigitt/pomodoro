@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Timer from './components/Timer';
 import ModeSelector from './components/ModeSelector';
 import TaskList from './components/TaskList';
@@ -10,12 +10,72 @@ function App() {
   const [shortBreakMinutes, setShortBreakMinutes] = useState(5);
   const [longBreakMinutes, setLongBreakMinutes] = useState(15);
   const [showSettings, setShowSettings] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  
+  // Audio refs
+  const timerCompleteSound = useRef<HTMLAudioElement>(null);
+  const buttonClickSound = useRef<HTMLAudioElement>(null);
+  
+  // Initialize audio elements
+  useEffect(() => {
+    // Check if sound preference is stored
+    const storedSoundPreference = localStorage.getItem('pomodoro-sound-enabled');
+    if (storedSoundPreference !== null) {
+      setSoundEnabled(storedSoundPreference === 'true');
+    }
+    
+    // Preload sounds
+    const preloadSounds = async () => {
+      try {
+        if (timerCompleteSound.current) {
+          timerCompleteSound.current.volume = 0.7;
+          await timerCompleteSound.current.play();
+          timerCompleteSound.current.pause();
+          timerCompleteSound.current.currentTime = 0;
+        }
+        
+        if (buttonClickSound.current) {
+          buttonClickSound.current.volume = 0.5;
+          await buttonClickSound.current.play();
+          buttonClickSound.current.pause();
+          buttonClickSound.current.currentTime = 0;
+        }
+      } catch {
+        console.log('Audio preload failed. User interaction required before audio can play.');
+      }
+    };
+    
+    preloadSounds();
+    
+    return () => {
+      // Cleanup
+      if (timerCompleteSound.current) {
+        timerCompleteSound.current.pause();
+      }
+      if (buttonClickSound.current) {
+        buttonClickSound.current.pause();
+      }
+    };
+  }, []);
+  
+  // Save sound preference when it changes
+  useEffect(() => {
+    localStorage.setItem('pomodoro-sound-enabled', soundEnabled.toString());
+  }, [soundEnabled]);
 
   const handleModeChange = (newMode: string) => {
     setMode(newMode);
+    if (buttonClickSound.current) {
+      playSound(buttonClickSound.current);
+    }
   };
 
   const handleTimerComplete = () => {
+    // Play notification sound
+    if (timerCompleteSound.current) {
+      playSound(timerCompleteSound.current);
+    }
+    
     // Auto switch to next mode
     if (mode === 'pomodoro') {
       setMode('shortBreak');
@@ -25,8 +85,20 @@ function App() {
       setMode('pomodoro');
     }
     
-    // Play notification sound here
-    // You can add a sound effect when timer completes
+    // Show browser notification if permission is granted
+    if (Notification.permission === 'granted') {
+      const notificationTitle = mode === 'pomodoro' 
+        ? 'Time for a break!' 
+        : 'Break is over, back to work!';
+      
+      new Notification(notificationTitle, {
+        icon: '/favicon.svg',
+        body: mode === 'pomodoro' 
+          ? 'Good job! Take a short break.' 
+          : 'Pomodoro timer is starting.',
+        silent: true // We're playing our own sound
+      });
+    }
   };
 
   const getCurrentTimerMinutes = () => {
@@ -39,6 +111,42 @@ function App() {
     setPomodoroMinutes(pomodoro);
     setShortBreakMinutes(shortBreak);
     setLongBreakMinutes(longBreak);
+    if (buttonClickSound.current) {
+      playSound(buttonClickSound.current);
+    }
+  };
+  
+  const toggleSound = () => {
+    setSoundEnabled(!soundEnabled);
+    // Play a sound when enabling (but not when disabling)
+    if (!soundEnabled && buttonClickSound.current) {
+      buttonClickSound.current.play().catch(error => {
+        console.error('Error playing sound:', error);
+      });
+    }
+  };
+  
+  const requestNotificationPermission = () => {
+    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+      Notification.requestPermission();
+    }
+  };
+  
+  // Request notification permission when the app loads
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+
+  const playSound = (audioElement: HTMLAudioElement) => {
+    if (soundEnabled) {
+      // Reset the audio to the beginning
+      audioElement.currentTime = 0;
+      
+      // Play the sound
+      audioElement.play().catch(error => {
+        console.error('Error playing sound:', error);
+      });
+    }
   };
 
   return (
@@ -46,15 +154,37 @@ function App() {
       <div className="max-w-md mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Pomodoro Timer</h1>
-          <button 
-            className="bg-gray-700 hover:bg-gray-600 p-2 rounded-full"
-            onClick={() => setShowSettings(true)}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              className={`p-2 rounded-full ${soundEnabled ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 hover:bg-gray-600'}`}
+              onClick={toggleSound}
+              aria-label={soundEnabled ? 'Disable sound' : 'Enable sound'}
+              title={soundEnabled ? 'Sound on' : 'Sound off'}
+            >
+              {soundEnabled ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 6a7.975 7.975 0 015.657 2.343m0 0a9.99 9.99 0 011.414 1.414M12 2c3.866 0 7.414 1.343 10.207 3.586m0 0a11.953 11.953 0 012.793 2.793" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                </svg>
+              )}
+            </button>
+            <button 
+              className="bg-gray-700 hover:bg-gray-600 p-2 rounded-full"
+              onClick={() => setShowSettings(true)}
+              aria-label="Settings"
+              title="Settings"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+          </div>
         </div>
         
         <div className="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
@@ -95,6 +225,10 @@ function App() {
           onClose={() => setShowSettings(false)}
         />
       )}
+      
+      {/* Audio elements */}
+      <audio ref={timerCompleteSound} src="/sounds/timer-complete.mp3" preload="auto" />
+      <audio ref={buttonClickSound} src="/sounds/button-click.mp3" preload="auto" />
     </div>
   );
 }

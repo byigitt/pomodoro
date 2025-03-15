@@ -16,6 +16,46 @@ function App() {
   const timerCompleteSound = useRef<HTMLAudioElement>(null);
   const buttonClickSound = useRef<HTMLAudioElement>(null);
   
+  // Update favicon based on current mode
+  useEffect(() => {
+    const updateFavicon = () => {
+      const favicon = document.getElementById('favicon') as HTMLLinkElement;
+      if (!favicon) return;
+      
+      // Create SVG with different colors based on mode
+      const color = mode === 'pomodoro' 
+        ? '#EF4444' // Red for pomodoro
+        : mode === 'shortBreak' 
+          ? '#10B981' // Green for short break
+          : '#3B82F6'; // Blue for long break
+      
+      const svgString = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="32" r="28" fill="${color}" />
+          <circle cx="32" cy="32" r="24" fill="${mode === 'pomodoro' ? '#B91C1C' : mode === 'shortBreak' ? '#059669' : '#2563EB'}" />
+          <path d="M32 12V32L44 44" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="32" cy="32" r="3" fill="white" />
+        </svg>
+      `;
+      
+      // Convert SVG to data URL
+      const encodedSvg = encodeURIComponent(svgString);
+      const dataUrl = `data:image/svg+xml,${encodedSvg}`;
+      
+      // Update favicon href
+      favicon.href = dataUrl;
+      
+      // Update page title with mode
+      document.title = mode === 'pomodoro' 
+        ? 'Pomodoro Timer' 
+        : mode === 'shortBreak' 
+          ? 'Short Break' 
+          : 'Long Break';
+    };
+    
+    updateFavicon();
+  }, [mode]);
+  
   // Initialize audio elements
   useEffect(() => {
     // Check if sound preference is stored

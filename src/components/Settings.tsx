@@ -1,10 +1,15 @@
 import { useState } from 'react';
 
+interface TimerSettings {
+  minutes: number;
+  seconds: number;
+}
+
 interface SettingsProps {
   pomodoroMinutes: number;
   shortBreakMinutes: number;
   longBreakMinutes: number;
-  onSave: (pomodoro: number, shortBreak: number, longBreak: number) => void;
+  onSave: (pomodoro: TimerSettings, shortBreak: TimerSettings, longBreak: TimerSettings) => void;
   onClose: () => void;
 }
 
@@ -15,14 +20,25 @@ const Settings = ({
   onSave, 
   onClose 
 }: SettingsProps) => {
-  const [pomodoro, setPomodoro] = useState(pomodoroMinutes);
-  const [shortBreak, setShortBreak] = useState(shortBreakMinutes);
-  const [longBreak, setLongBreak] = useState(longBreakMinutes);
+  const [pomodoro, setPomodoro] = useState<TimerSettings>({ minutes: pomodoroMinutes, seconds: 0 });
+  const [shortBreak, setShortBreak] = useState<TimerSettings>({ minutes: shortBreakMinutes, seconds: 0 });
+  const [longBreak, setLongBreak] = useState<TimerSettings>({ minutes: longBreakMinutes, seconds: 0 });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(pomodoro, shortBreak, longBreak);
     onClose();
+  };
+
+  const handleTimeChange = (
+    setter: React.Dispatch<React.SetStateAction<TimerSettings>>,
+    field: 'minutes' | 'seconds',
+    value: number
+  ) => {
+    setter(prev => ({
+      ...prev,
+      [field]: Math.max(0, Math.min(field === 'minutes' ? 60 : 59, value))
+    }));
   };
 
   return (
@@ -32,39 +48,87 @@ const Settings = ({
         
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block mb-2">Pomodoro (minutes)</label>
-            <input
-              type="number"
-              min="1"
-              max="60"
-              value={pomodoro}
-              onChange={(e) => setPomodoro(Number(e.target.value))}
-              className="w-full px-3 py-2 bg-gray-700 rounded-md"
-            />
+            <label className="block mb-2">Pomodoro</label>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-sm text-gray-400 mb-1">Minutes</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="60"
+                  value={pomodoro.minutes}
+                  onChange={(e) => handleTimeChange(setPomodoro, 'minutes', Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-gray-700 rounded-md"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm text-gray-400 mb-1">Seconds</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={pomodoro.seconds}
+                  onChange={(e) => handleTimeChange(setPomodoro, 'seconds', Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-gray-700 rounded-md"
+                />
+              </div>
+            </div>
           </div>
           
           <div className="mb-4">
-            <label className="block mb-2">Short Break (minutes)</label>
-            <input
-              type="number"
-              min="1"
-              max="30"
-              value={shortBreak}
-              onChange={(e) => setShortBreak(Number(e.target.value))}
-              className="w-full px-3 py-2 bg-gray-700 rounded-md"
-            />
+            <label className="block mb-2">Short Break</label>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-sm text-gray-400 mb-1">Minutes</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="30"
+                  value={shortBreak.minutes}
+                  onChange={(e) => handleTimeChange(setShortBreak, 'minutes', Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-gray-700 rounded-md"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm text-gray-400 mb-1">Seconds</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={shortBreak.seconds}
+                  onChange={(e) => handleTimeChange(setShortBreak, 'seconds', Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-gray-700 rounded-md"
+                />
+              </div>
+            </div>
           </div>
           
-          <div className="mb-6">
-            <label className="block mb-2">Long Break (minutes)</label>
-            <input
-              type="number"
-              min="1"
-              max="60"
-              value={longBreak}
-              onChange={(e) => setLongBreak(Number(e.target.value))}
-              className="w-full px-3 py-2 bg-gray-700 rounded-md"
-            />
+          <div className="mb-4">
+            <label className="block mb-2">Long Break</label>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-sm text-gray-400 mb-1">Minutes</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="60"
+                  value={longBreak.minutes}
+                  onChange={(e) => handleTimeChange(setLongBreak, 'minutes', Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-gray-700 rounded-md"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm text-gray-400 mb-1">Seconds</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={longBreak.seconds}
+                  onChange={(e) => handleTimeChange(setLongBreak, 'seconds', Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-gray-700 rounded-md"
+                />
+              </div>
+            </div>
           </div>
           
           <div className="flex justify-end">

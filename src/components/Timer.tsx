@@ -2,20 +2,21 @@ import { useState, useEffect } from 'react';
 
 interface TimerProps {
   initialMinutes: number;
+  initialSeconds: number;
   onComplete: () => void;
 }
 
-const Timer = ({ initialMinutes, onComplete }: TimerProps) => {
+const Timer = ({ initialMinutes, initialSeconds, onComplete }: TimerProps) => {
   const [minutes, setMinutes] = useState(initialMinutes);
-  const [seconds, setSeconds] = useState(0);
+  const [seconds, setSeconds] = useState(initialSeconds);
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    // Reset timer when initialMinutes changes
+    // Reset timer when initial time changes
     setMinutes(initialMinutes);
-    setSeconds(0);
+    setSeconds(initialSeconds);
     setIsActive(false);
-  }, [initialMinutes]);
+  }, [initialMinutes, initialSeconds]);
 
   useEffect(() => {
     let interval: number | undefined;
@@ -52,7 +53,7 @@ const Timer = ({ initialMinutes, onComplete }: TimerProps) => {
   const handleReset = () => {
     setIsActive(false);
     setMinutes(initialMinutes);
-    setSeconds(0);
+    setSeconds(initialSeconds);
   };
 
   return (

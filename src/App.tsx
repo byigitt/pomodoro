@@ -4,11 +4,16 @@ import ModeSelector from './components/ModeSelector';
 import TaskList from './components/TaskList';
 import Settings from './components/Settings';
 
+interface TimerSettings {
+  minutes: number;
+  seconds: number;
+}
+
 function App() {
   const [mode, setMode] = useState('pomodoro'); // pomodoro, shortBreak, longBreak
-  const [pomodoroMinutes, setPomodoroMinutes] = useState(25);
-  const [shortBreakMinutes, setShortBreakMinutes] = useState(5);
-  const [longBreakMinutes, setLongBreakMinutes] = useState(15);
+  const [pomodoroTime, setPomodoroTime] = useState<TimerSettings>({ minutes: 25, seconds: 0 });
+  const [shortBreakTime, setShortBreakTime] = useState<TimerSettings>({ minutes: 5, seconds: 0 });
+  const [longBreakTime, setLongBreakTime] = useState<TimerSettings>({ minutes: 15, seconds: 0 });
   const [showSettings, setShowSettings] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   
@@ -141,16 +146,16 @@ function App() {
     }
   };
 
-  const getCurrentTimerMinutes = () => {
-    if (mode === 'pomodoro') return pomodoroMinutes;
-    if (mode === 'shortBreak') return shortBreakMinutes;
-    return longBreakMinutes;
+  const getCurrentTimerSettings = () => {
+    if (mode === 'pomodoro') return pomodoroTime;
+    if (mode === 'shortBreak') return shortBreakTime;
+    return longBreakTime;
   };
 
-  const handleSaveSettings = (pomodoro: number, shortBreak: number, longBreak: number) => {
-    setPomodoroMinutes(pomodoro);
-    setShortBreakMinutes(shortBreak);
-    setLongBreakMinutes(longBreak);
+  const handleSaveSettings = (pomodoro: TimerSettings, shortBreak: TimerSettings, longBreak: TimerSettings) => {
+    setPomodoroTime(pomodoro);
+    setShortBreakTime(shortBreak);
+    setLongBreakTime(longBreak);
     if (buttonClickSound.current) {
       playSound(buttonClickSound.current);
     }
@@ -232,7 +237,8 @@ function App() {
           />
           
           <Timer 
-            initialMinutes={getCurrentTimerMinutes()} 
+            initialMinutes={getCurrentTimerSettings().minutes}
+            initialSeconds={getCurrentTimerSettings().seconds}
             onComplete={handleTimerComplete} 
           />
         </div>
@@ -256,17 +262,17 @@ function App() {
 
       {showSettings && (
         <Settings 
-          pomodoroMinutes={pomodoroMinutes}
-          shortBreakMinutes={shortBreakMinutes}
-          longBreakMinutes={longBreakMinutes}
+          pomodoroMinutes={pomodoroTime.minutes}
+          shortBreakMinutes={shortBreakTime.minutes}
+          longBreakMinutes={longBreakTime.minutes}
           onSave={handleSaveSettings}
           onClose={() => setShowSettings(false)}
         />
       )}
       
       {/* Audio elements */}
-      <audio ref={timerCompleteSound} src="/sounds/timer-complete.mp3" preload="auto" />
-      <audio ref={buttonClickSound} src="/sounds/button-click.mp3" preload="auto" />
+      <audio ref={timerCompleteSound} src="/sounds/timer-complete.wav" preload="auto" />
+      <audio ref={buttonClickSound} src="/sounds/bell.ogg" preload="auto" />
     </div>
   );
 }

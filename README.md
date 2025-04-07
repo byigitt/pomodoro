@@ -33,8 +33,8 @@ The Pomodoro Technique is a time management method developed by Francesco Cirill
 
 ```bash
 # Clone the repository
-git clone https://github.com/byigitt/pomodoro-timer.git
-cd pomodoro-timer
+git clone https://github.com/byigitt/pomodoro.git
+cd pomodoro
 
 # Install dependencies
 pnpm install

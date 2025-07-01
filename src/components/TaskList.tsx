@@ -5,6 +5,7 @@ interface Task {
   text: string;
   completed: boolean;
   createdAt: number;
+  completedAt?: number;
 }
 
 const TaskList = () => {
@@ -46,7 +47,13 @@ const TaskList = () => {
 
   const toggleTask = (id: number) => {
     setTasks(tasks.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
+      task.id === id 
+        ? { 
+            ...task, 
+            completed: !task.completed,
+            completedAt: !task.completed ? Date.now() : undefined
+          }
+        : task
     ));
   };
 
@@ -165,9 +172,26 @@ const TaskList = () => {
                 <span className={`block ${task.completed ? 'line-through text-gray-500' : 'text-gray-200'} transition-colors`}>
                   {task.text}
                 </span>
-                <span className="text-xs text-gray-600">
-                  {new Date(task.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                </span>
+                <div className="text-xs text-gray-600 space-y-1">
+                  <div>
+                    📝 Created: {new Date(task.createdAt).toLocaleDateString(undefined, { 
+                      month: 'short', 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </div>
+                  {task.completed && task.completedAt && (
+                    <div className="text-green-400/70">
+                      ✅ Completed: {new Date(task.completedAt).toLocaleDateString(undefined, { 
+                        month: 'short', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
               <button 
                 onClick={() => deleteTask(task.id)}
